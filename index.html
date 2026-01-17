@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>FitMaster Pro - Фитнес Трекер</title>
+  
+  <!-- PWA Мета-теги -->
+  <meta name="application-name" content="FitMaster Pro">
+  <meta name="apple-mobile-web-app-title" content="FitMaster">
+  <meta name="description" content="PWA Фитнес-Трекер с геймификацией. Отслеживайте тренировки, питание и прогресс оффлайн.">
+  <meta name="theme-color" content="#7c3aed">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="msapplication-TileColor" content="#7c3aed">
+  
+  <!-- Иконки PWA -->
+  <link rel="icon" type="image/png" href="/icons/icon-72.png" sizes="72x72">
+  <link rel="icon" type="image/png" href="/icons/icon-96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/icons/icon-128.png" sizes="128x128">
+  <link rel="icon" type="image/png" href="/icons/icon-144.png" sizes="144x144">
+  <link rel="icon" type="image/png" href="/icons/icon-152.png" sizes="152x152">
+  <link rel="icon" type="image/png" href="/icons/icon-192.png" sizes="192x192">
+  <link rel="icon" type="image/png" href="/icons/icon-384.png" sizes="384x384">
+  <link rel="icon" type="image/png" href="/icons/icon-512.png" sizes="512x512">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  
+  <!-- Manifest -->
+  <link rel="manifest" href="/manifest.json">
+  
+  <!-- Splash Screen для iOS -->
+  <link rel="apple-touch-startup-image" href="/splash-screen.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+  
+  <!-- Предзагрузка шрифтов -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Предзагрузка критичных стилей -->
+  <style>
+    /* Критичные стили для мгновенной загрузки */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+      color: white;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    #root {
+      min-height: 100vh;
+    }
+    
+    /* Анимация загрузки */
+    .app-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+    }
+    
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Экран загрузки (показывается до загрузки React) -->
+  <div id="loading" class="app-loading">
+    <div class="loading-spinner"></div>
+    <div style="margin-top: 20px; font-weight: 600; font-size: 1.2rem;">
+      Загрузка FitMaster Pro...
+    </div>
+    <div style="margin-top: 10px; opacity: 0.8; font-size: 0.9rem;">
+      🏋️‍♂️ Ваш фитнес-помощник
+    </div>
+  </div>
+  
+  <!-- Точка входа React -->
+  <div id="root" style="display: none;"></div>
+  
+  <!-- Основной скрипт -->
+  <script type="module" src="/src/main.jsx"></script>
+  
+  <!-- Регистрация Service Worker для PWA -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(registration => {
+            console.log('✅ Service Worker зарегистрирован:', registration.scope);
+            
+            // Показываем уведомление об оффлайн работе
+            if (registration.active) {
+              console.log('📱 Приложение готово к оффлайн работе');
+            }
+          })
+          .catch(error => {
+            console.log('⚠️ Ошибка регистрации Service Worker:', error);
+          });
+      });
+    }
+    
+    // Скрываем экран загрузки когда React готов
+    window.addEventListener('DOMContentLoaded', () => {
+      const loading = document.getElementById('loading');
+      const root = document.getElementById('root');
+      
+      // Через 2 секунды показываем приложение (или когда React загрузится)
+      setTimeout(() => {
+        if (loading) loading.style.display = 'none';
+        if (root) root.style.display = 'block';
+      }, 2000);
+    });
+    
+    // Добавление на главный экран
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      
+      // Показываем кнопку установки (будет в React компоненте)
+      console.log('📱 Приложение можно установить на главный экран');
+      
+      // Сохраняем событие для использования позже
+      window.deferredPrompt = deferredPrompt;
+    });
+  </script>
+</body>
+</html>
